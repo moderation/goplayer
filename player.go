@@ -39,7 +39,7 @@ func File(w http.ResponseWriter, r *http.Request) {
 	fn := *root + r.URL.Path[len(filePrefix):]
 	fi, err := os.Stat(fn)
 	if err != nil {
-		http.Error(w, err.String(), http.StatusNotFound)
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 	if fi.IsDirectory() {
@@ -53,8 +53,8 @@ func File(w http.ResponseWriter, r *http.Request) {
 
 func serveDirectory(fn string, w http.ResponseWriter, r *http.Request) {
 	defer func() {
-		if err, ok := recover().(os.Error); ok {
-			http.Error(w, err.String(), http.StatusInternalServerError)
+		if err, ok := recover().(error); ok {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}()
 	d, err := os.Open(fn)
