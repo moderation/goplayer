@@ -1,9 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
-	"http"
-	"json"
+	"log"
+	"net/http"
 	"os"
 )
 
@@ -13,17 +14,24 @@ const (
 
 var (
 	addr = flag.String("http", ":8080", "http listen address")
-	root = flag.String("root", "/store/iTunes/", "music root")
+	root = flag.String("root", "/Volumes/media/Music/", "music root")
 )
 
 func main() {
 	flag.Parse()
 	http.HandleFunc("/", Index)
+	log.Printf("About to listen on 8080. Go to https://localhost:8080/")
 	http.HandleFunc(filePrefix, File)
-	http.ListenAndServe(*addr, nil)
+	// http.ListenAndServe(*addr, nil)
+	err := http.ListenAndServeTLS(*addr, "moderation-cert.pem", "moderation-key.pem", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func Index(w http.ResponseWriter, r *http.Request) {
+	log.Println("Request:", r)
+	log.Println("Response:", w)
 	http.ServeFile(w, r, "./index.html")
 }
 
@@ -38,6 +46,8 @@ func File(w http.ResponseWriter, r *http.Request) {
 		serveDirectory(fn, w, r)
 		return
 	}
+	log.Println("Request:", r)
+	log.Println("Response:", w)
 	http.ServeFile(w, r, fn)
 }
 
